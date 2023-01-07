@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -23,6 +24,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  //DatabaseProviderクラスは、SQLiteデータベースを操作するためのクラス
   final _favoriteBloc = FavoriteBloc();
 
   @override
@@ -33,11 +35,12 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: WebView(
         initialUrl: 'https://www.youtube.com/',
+        javascriptMode: JavascriptMode.unrestricted,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           // お気に入りを追加する処理
-          final url = 'https://www.youtube.com/watch?v=XXXXXXXXXXX';
+          final url = 'https://www.youtube.com';
           await _favoriteBloc.addFavorite(url);
         },
         child: Icon(Icons.favorite),
@@ -53,15 +56,16 @@ class FavoriteDao {
 
   final dbProvider = DatabaseProvider();
 
-  Future<int> create(String url) async {
+  Future<int?> create(String url) async {
     final db = await dbProvider.database;
-    final result = await db.insert(
+    final result = await db?.insert(
       tableName,
       {
         columnUrl: url,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    return result;
   }
 }
 
@@ -69,7 +73,34 @@ class FavoriteDao {
 class FavoriteBloc {
   final _favoriteDao = FavoriteDao();
 
-  Future<int> addFavorite(String url) async {
+  Future<int?> addFavorite(String url) async {
     return await _favoriteDao.create(url);
+  }
+}
+
+class DatabaseProvider {
+  static final DatabaseProvider _instance = DatabaseProvider._internal();
+
+  factory DatabaseProvider() => _instance;
+
+  DatabaseProvider._internal();
+
+  static Database? _database;
+
+  Future<Database?> get database async {
+    if (_database != null) return _database;
+
+    _database = await _initDatabase();
+    return _database;
+  }
+
+  _initDatabase() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, 'favorites.db');
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
+  }
+
+  void _onCreate(Database db, int version) async {
+    await db.execute('CREATE TABLE favorites (id INTEGER PRIMARY KEY, url TEXT)');
   }
 }
