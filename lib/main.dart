@@ -49,6 +49,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+
+/// お気に入りの動画を保存するためのクラス
+/// SQLiteデータベースを使用して、
+/// お気に入りの動画を保存、取得、削除するためのメソッドを持つ。
 class FavoriteDao {
   static const tableName = 'favorites';
   static const columnId = '_id';
@@ -93,7 +97,7 @@ class DatabaseProvider {
     _database = await _initDatabase();
     return _database;
   }
-
+  //SQL データベースを初期化する
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, 'favorites.db');
