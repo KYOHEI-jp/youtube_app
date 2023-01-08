@@ -32,6 +32,34 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Flutter Youtube App'),
+        leading: Container(),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () {
+              // Drawerを表示する処理
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget>[
+            ListTile(
+              title: Text('Menu 1'),
+              onTap: () {
+                // Menu 1をタップしたときの処理
+              },
+            ),
+            ListTile(
+              title: Text('Menu 2'),
+              onTap: () {
+                // Menu 2をタップしたときの処理
+              },
+            ),
+          ],
+        ),
       ),
       body: WebView(
         initialUrl: 'https://www.youtube.com/',
@@ -48,7 +76,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
 
 /// お気に入りの動画を保存するためのクラス
 /// SQLiteデータベースを使用して、
@@ -97,6 +124,7 @@ class DatabaseProvider {
     _database = await _initDatabase();
     return _database;
   }
+
   //SQL データベースを初期化する
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
@@ -105,6 +133,7 @@ class DatabaseProvider {
   }
 
   void _onCreate(Database db, int version) async {
-    await db.execute('CREATE TABLE favorites (id INTEGER PRIMARY KEY, url TEXT)');
+    await db
+        .execute('CREATE TABLE favorites (id INTEGER PRIMARY KEY, url TEXT)');
   }
 }
